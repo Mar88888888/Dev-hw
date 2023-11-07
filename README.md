@@ -9,10 +9,13 @@
 >2. CSS
 >3. JS:
 >     - basic JS
->     - Node.js (beginner level [^1])
+>
+>Also learned:
+>  - Node.js (beginner level [^1])
+>  - SQL (Just some types of requests)
 
 > 
-> but now I want to start improving myself in back-end side.
+> Now I want to start improving myself in back-end side.
 ## What is this repository made for?
 >This repository is made to practise git and github. So even this file is used to show some formating features (like _color_ `#0969DA`,
 >[relative link](hw4\README.md)
