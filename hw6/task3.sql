@@ -1,0 +1,1 @@
+SELECT Count(DISTINCT district) AS count FROM (address INNER JOIN customer ON address.address_id = customer.address_id)
