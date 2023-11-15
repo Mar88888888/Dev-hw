@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Club {
+  id                Int       @id @default(autoincrement())
+  name              String    @db.VarChar(50)
+  city              String    @db.VarChar(50)
+  stadiumId         Int       @unique
+  stadium           Stadium   @relation(fields: [stadiumId], references: [id])
+  contracts         Contract[]
+  home_matches      Match[]   @relation("HomeClub")
+  away_matches      Match[]   @relation("AwayClub")
+}
+
+model Stadium {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(100)
+  address   String    @db.VarChar(200)
+  club      Club?
+  capacity  Int
+}
+
+model Player {
+  id            Int       @id @default(autoincrement())
+  birthDate     DateTime
+  first_name    String    @db.VarChar(50)
+  last_name     String    @db.VarChar(50)
+  height        Float
+  position      Position
+  contracts     Contract[]
+  goals         Goal[]
+  retired       Boolean   @default(false)
+}
+
+model Contract {
+  id            Int       @id @default(autoincrement())
+  club          Club      @relation(fields: [clubId], references: [id])
+  clubId        Int
+  startDate     DateTime
+  endDate       DateTime
+  year_salary   Int
+  player        Player    @relation(fields: [playerId], references: [id])
+  playerId      Int
+}
+
+model Match {
+  id                    Int       @id @default(autoincrement())
+  date                  DateTime
+  homeClub              Club      @relation("HomeClub", fields: [homeClubId], references: [id])
+  homeClubId            Int
+  awayClub              Club      @relation("AwayClub", fields: [awayClubId], references: [id])
+  awayClubId            Int
+  referee_assignments   RefereeAssignment[]
+  goals                 Goal[]
+}
+
+model Goal {
+  id        Int       @id @default(autoincrement())
+  minute    Int
+  scorer    Player    @relation(fields: [scorerId], references: [id])
+  scorerId  Int
+  match     Match     @relation(fields: [matchId], references: [id])
+  matchId   Int
+}
+
+model Referee {
+  id                    Int                 @id @default(autoincrement())
+  birthDate             DateTime
+  first_name            String              @db.VarChar(50)
+  last_name             String              @db.VarChar(50)
+  matches_assignments   RefereeAssignment[]
+}
+
+model RefereeAssignment{
+    match       Match     @relation(fields: [matchId], references: [id])
+    matchId     Int
+    referee     Referee     @relation(fields: [refereeId], references: [id])
+    refereeId   Int
+    @@id([matchId, refereeId])
+}
+
+enum Position {
+  GOALKEEPER
+  DEFENDER
+  MIDFIELDER
+  ATTACKER
+}
