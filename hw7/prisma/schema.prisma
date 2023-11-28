@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "./generated/client"
 }
 
 datasource db {
@@ -13,13 +14,12 @@ datasource db {
 model Product {
   id                Int             @id @default(autoincrement())
   name              String
-  category          Category
   amount            Int
   price             Decimal
   orderProducts     OrderProduct[]
-
+  categoryId        Int?
+  category          Category?        @relation(fields: [categoryId], references: [id])
 }
-
 
 
 model Customer {
@@ -62,9 +62,8 @@ model OrderProduct {
   productId         Int
 }
 
-enum Category{
-    Food
-    Sport
-    Clothes
-    Gadgets
+model Category{
+  id                Int             @id @default(autoincrement())
+  name              String
+  products          Product[]
 }
