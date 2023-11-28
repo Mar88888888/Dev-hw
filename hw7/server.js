@@ -134,20 +134,43 @@ async function deleteOrder(orderId){
   }
 }
 
-async function createProduct(obj){
-  let id = await FindByName('category', obj.category);
-  console.log(id);
+// async function createProduct(obj){
+//   let id = await FindByName('category', obj.category);
+//   console.log(id);
 
-  if(typeof id === 'number'){
-    obj.categoryId = id;
-    delete obj.category;
-    delete obj.id;
-    let createdInstance = await createInstance("Product", obj);
+//   if(typeof id === 'number'){
+//     obj.category = { connect: { id: 0 } };
+//     obj.id = null;
+//     let createdInstance = await createInstance("Product", obj);
+//     return createdInstance;
+//   }else{
+//     return null;
+//   }
+// }
+
+async function createProduct(obj) {
+  let categoryId = await FindByName('category', obj.category);
+
+  if (typeof categoryId === 'number') {
+    // Check if the category exists
+    let existingCategory = await prisma.category.findFirst({
+      where: {
+        id: categoryId,
+      },
+    });
+
+    if (!existingCategory) {
+      return null; // Category does not exist
+    }
+
+    obj.category = { connect: { id: categoryId } };
+    let createdInstance = await createInstance('Product', obj);
     return createdInstance;
-  }else{
-    return null;
+  } else {
+    return null; // Invalid category
   }
 }
+
 
 
 // Data layer
