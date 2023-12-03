@@ -134,19 +134,6 @@ async function deleteOrder(orderId){
   }
 }
 
-// async function createProduct(obj){
-//   let id = await FindByName('category', obj.category);
-//   console.log(id);
-
-//   if(typeof id === 'number'){
-//     obj.category = { connect: { id: 0 } };
-//     obj.id = null;
-//     let createdInstance = await createInstance("Product", obj);
-//     return createdInstance;
-//   }else{
-//     return null;
-//   }
-// }
 
 async function createProduct(obj) {
   let categoryId = await FindByName('category', obj.category);
