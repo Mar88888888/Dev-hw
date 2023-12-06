@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Delete, Post, Param, Body, Res } from '@nestjs/common';
+import { Controller, Get, Patch, Delete, Post, Param, Body, Res, UsePipes, ParseIntPipe, HttpException, HttpStatus } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Response } from 'express';
 import {
@@ -7,68 +7,81 @@ import {
   EmployeeNotFoundException,
   CategoryNotFoundException,
 } from './custom.exceptions';
+import {
+  CheckOrderExistencePipe,
+  CheckCustomerExistencePipe,
+  CheckEmployeeExistencePipe,
+} from './custom.pipes';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly appService: AppService | undefined) {
+    if (appService === undefined) {
+      throw new Error('appService is undefined');
+    }
+  }
 
   @Get('/customers/:customerId/orders')
+  @UsePipes(new CheckCustomerExistencePipe(new AppService(), new ParseIntPipe()))
   async getCustomerOrders(@Param('customerId') customerId: number, @Res() res: Response) {
-    try{
-    console.log('GET request');
-    let result =  await this.appService.getCustomerOrders(Number(customerId));
-    res.status(200).json(result);
-    }catch(err){
+    try {
+      if (this.appService === undefined) {
+        throw new Error('appService is undefined');
+      }
+      console.log('GET request');
+      const result = await this.appService.getCustomerOrders(Number(customerId));
+      res.status(HttpStatus.OK).json(result);
+    } catch (err) {
       if (err instanceof CustomerNotFoundException) {
-        res.status(err.getStatus()).json({ error: err.message });
-      }else{
-        res.status(500).json({ error: err.message });
+        throw new HttpException({ error: err.message }, HttpStatus.NOT_FOUND);
+      } else {
+        throw new HttpException({ error: err.message }, HttpStatus.INTERNAL_SERVER_ERROR);
       }
     }
   }
 
   @Patch('/employees/:employeeId')
-  async updateEmployee(@Param('employeeId') employeeId: number, @Body() updatedEmployee: any, @Res() res: Response) {
-    try{
+  async updateEmployee(@Param('employeeId', new ParseIntPipe(), new CheckEmployeeExistencePipe(new AppService())) employeeId: number, @Body() updatedEmployee: any, @Res() res: Response) {
+    try {
       console.log('PATCH request');
-      let result =  await this.appService.updateEmployee(Number(employeeId), updatedEmployee);
-      res.status(200).json(result);
-    }catch(err){
+      const result = await this.appService.updateEmployee(Number(employeeId), updatedEmployee);
+      res.status(HttpStatus.OK).json(result);
+    } catch (err) {
       if (err instanceof EmployeeNotFoundException) {
-        res.status(err.getStatus()).json({ error: err.message });
-      }else{
-        res.status(500).json({ error: err.message });
+        throw new HttpException({ error: err.message }, HttpStatus.NOT_FOUND);
+      } else {
+        throw new HttpException({ error: err.message }, HttpStatus.INTERNAL_SERVER_ERROR);
       }
     }
   }
 
   @Delete('/orders/:orderId')
-  async deleteOrder(@Param('orderId') orderId: number,  @Res() res: Response) {
-    try{
+  @UsePipes(new CheckOrderExistencePipe(new AppService(), new ParseIntPipe()))
+  async deleteOrder(@Param('orderId') orderId: number, @Res() res: Response) {
+    try {
       console.log('DELETE request');
-      let result =  await this.appService.deleteOrder(Number(orderId));
-      res.status(200).json(result);
-    }catch(err){
+      const result = await this.appService.deleteOrder(Number(orderId));
+      res.status(HttpStatus.OK).json(result);
+    } catch (err) {
       if (err instanceof OrderNotFoundException) {
-        res.status(err.getStatus()).json({ error: err.message });
-      }else{
-        res.status(500).json({ error: err.message });
+        throw new HttpException({ error: err.message }, HttpStatus.NOT_FOUND);
+      } else {
+        throw new HttpException({ error: err.message }, HttpStatus.INTERNAL_SERVER_ERROR);
       }
     }
   }
 
   @Post('/products')
-  async createProduct(@Body() newProduct: any,  @Res() res: Response) {
-    try{
+  async createProduct(@Body() newProduct: any, @Res() res: Response) {
+    try {
       console.log('POST request');
-      let result =  await this.appService.createProduct(newProduct);
-
-      res.status(201).json(result);
-    }catch(err){
+      const result = await this.appService.createProduct(newProduct);
+      res.status(HttpStatus.CREATED).json(result);
+    } catch (err) {
       if (err instanceof CategoryNotFoundException) {
-        res.status(err.getStatus()).json({ error: err.message });
-      }else{
-        res.status(500).json({ error: err.message });
+        throw new HttpException({ error: err.message }, HttpStatus.NOT_FOUND);
+      } else {
+        throw new HttpException({ error: err.message }, HttpStatus.INTERNAL_SERVER_ERROR);
       }
     }
   }
