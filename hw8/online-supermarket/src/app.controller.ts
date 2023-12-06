@@ -12,6 +12,7 @@ import {
   CheckCustomerExistencePipe,
   CheckEmployeeExistencePipe,
 } from './custom.pipes';
+import { EmployeeDTO, ProductDTO } from './dto';
 
 @Controller()
 export class AppController {
@@ -41,7 +42,7 @@ export class AppController {
   }
 
   @Patch('/employees/:employeeId')
-  async updateEmployee(@Param('employeeId', new ParseIntPipe(), new CheckEmployeeExistencePipe(new AppService())) employeeId: number, @Body() updatedEmployee: any, @Res() res: Response) {
+  async updateEmployee(@Param('employeeId', new ParseIntPipe(), new CheckEmployeeExistencePipe(new AppService())) employeeId: number, @Body() updatedEmployee: EmployeeDTO, @Res() res: Response) {
     try {
       console.log('PATCH request');
       const result = await this.appService.updateEmployee(Number(employeeId), updatedEmployee);
@@ -72,7 +73,7 @@ export class AppController {
   }
 
   @Post('/products')
-  async createProduct(@Body() newProduct: any, @Res() res: Response) {
+  async createProduct(@Body() newProduct: ProductDTO, @Res() res: Response) {
     try {
       console.log('POST request');
       const result = await this.appService.createProduct(newProduct);
